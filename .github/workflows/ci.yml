@@ -5,6 +5,7 @@ on: push
 env:
     BIOLIB_LOG: debug
     BIOLIB_PROJECT_URI: Protein-Tools/af-design
+    BIOLIB_DEV_URI: Protein-Tools/af-design-dev
     LOCAL_DOCKER_TAG: af-design:latest
 
 jobs:
@@ -18,7 +19,7 @@ jobs:
                     fetch-depth: 2
 
             -   name: Build docker image
-                run: docker build -f Dockerfile -t $LOCAL_DOCKER_TAG .
+                run: docker build -t $LOCAL_DOCKER_TAG .
 
             -   name: Setup Python
                 uses: actions/setup-python@v2
@@ -29,8 +30,14 @@ jobs:
                 run: pip3 install pybiolib
 
             -   name: Publish new version to BioLib if on main branch
-                if: ${{ github.ref == 'refs/heads/main' }}
+                if: ${{ github.ref == 'refs/heads/main' }}  # MAIN BRANCH !!!!
                 run: biolib push $BIOLIB_PROJECT_URI --path biolib_app
                 env:
                     BIOLIB_TOKEN: ${{ secrets.BIOLIB_TOKEN }}
+            -   name: Publish new version to BioLib-Debugging if on dev branch
+                if: ${{ github.ref == 'refs/heads/dev' }}   # DEV BRANCH! !!!
+                run: biolib push $BIOLIB_DEV_URI --path biolib_app
+                env:
+                    BIOLIB_TOKEN: ${{ secrets.BIOLIB_TOKEN }}
+
 
