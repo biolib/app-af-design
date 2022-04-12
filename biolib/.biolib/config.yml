@@ -1,0 +1,12 @@
+biolib_version: 2
+modules:
+    main:
+        image: 'local-docker://af-design:latest'
+        command: python3 __main__.py
+        working_directory: /home/biolib/
+        input_files:
+            - COPY / /home/biolib/
+        output_files:
+            - COPY /home/biolib/ /
+        source_files:
+            - COPY / /home/biolib/
