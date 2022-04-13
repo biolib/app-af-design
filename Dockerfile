@@ -15,3 +15,4 @@ RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabFold/main/beta/co
 RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabDesign/main/af/design.py
 
 COPY biolib/root.py root.py
+COPY design.py design.py
