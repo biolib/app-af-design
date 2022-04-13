@@ -2,7 +2,7 @@ biolib_version: 2
 modules:
     main:
         image: 'local-docker://af-design:latest'
-        command: python3 __main__.py
+        command: python3 root.py
         working_directory: /home/biolib/
         input_files:
             - COPY / /home/biolib/
