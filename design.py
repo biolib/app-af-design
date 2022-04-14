@@ -7,6 +7,9 @@ def clear_mem():
   backend = jax.lib.xla_bridge.get_backend()
   for buf in backend.live_buffers(): buf.delete()
 
+mport sys
+sys.path.append('/af_backprop')
+
 from alphafold.common import protein
 from alphafold.data import pipeline, templates
 from alphafold.model import data, config, model, modules
