@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+sys.path.append('/')
 from design import mk_design_model, clear_mem
 
 import argparse
