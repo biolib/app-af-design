@@ -495,8 +495,7 @@ class _af_design:
     # decide which model params to use
     # m = self.args["num_models"]
     m = self.opt["models"]
-    #TODO 
-    print(m)
+
     ns = jnp.arange(2) if self.args["use_templates"] else jnp.arange(5)
     if self.args["model_mode"] == "fixed" or m == len(ns):
       self._model_num = ns[:m]
@@ -565,7 +564,6 @@ class _af_design:
     if e_soft is None: e_soft = soft
     if e_temp is None: e_temp = temp
     for i in range(iters):
-      print(iters)
       self.opt["temp"] = e_temp + (temp - e_temp) * (1-i/(iters-1)) ** 2
       self.opt["soft"] = soft + (e_soft - soft) * i/(iters-1)
       # decay learning rate based on temperature

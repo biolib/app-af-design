@@ -11,3 +11,4 @@ modules:
         source_files:
             - COPY / /home/biolib/
         gpu: required
+main_output_file: /output.md

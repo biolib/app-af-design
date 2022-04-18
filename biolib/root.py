@@ -38,11 +38,12 @@ mk_design.add_argument("--soft-mode", dest="soft_mode", help="Soft mode options 
                        default="logits", choices=["softmax", "softmax_gumbel", "logits"])
 mk_design.add_argument("--hard", dest="hard",
                        help="Hard sequence representation. Default: True", default="True")
-
+mk_design.add_argument('--num-seq', dest="num_seq",
+                       help="Number of sequences to predict, default: 1", default=1, type=int)
 mk_design.add_argument('--num-models', dest="num_models",
                        help="Number of model parameters to use, default: 1", default=1, type=int)
 mk_design.add_argument('--model-mode', dest="model_mode",
-                       help="How to run the models, default: sample.\n\tsample: at each iteration, randomly select one model param to use.\n\tparallel: run num_models in parallel, average the gradients.", choices=["sample", "parallel"])
+                       help="How to run the models, default: sample.\n\tsample: at each iteration, randomly select one model param to use.\n\tparallel: run num_models in parallel, average the gradients.", choices=["sample", "parallel"], default="sample")
 mk_design.add_argument('--num-recycles', dest="num_recycles",
                        help="Max number of recycles to use during design. For de novo proteins, 0 is usually enough. Default: 0", default=0, type=int)
 mk_design.add_argument('--recycle-mode', dest="recycle_mode", help="How to run recycles, default: sample.\n\tsample: at each iteration, randomly select a number of recycles to use, recommended.\n\tnadd_prev: add prediction logits across all recycles, stable but slow and requires memory.\n\tlast: only use gradients from last recycle.\n\tbackprop: use outputs from last recycle, but backprop through all recycles.",
@@ -82,11 +83,16 @@ args = parser.parse_args()
 
 # BINDER HALLUCINATION
 print("Create a model...")
-model = mk_design_model(protocol=args.protocol, num_models=args.num_models,
-                        model_mode=args.model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+
+if args.model_mode is not None:  model_mode = args.model_mode
+else: model_mode = "sample"
+
+model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
+                        model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
 # Set opt
 if args.dropout == "True": dropout = True
 elif args.dropout == "False": dropout = False
+
 
 model._default_opt["temp"] = args.temp
 model._default_opt["dropout"] = dropout
@@ -140,3 +146,15 @@ elif args.stages == "2":
     print("Design 2 stage binder...")
     model.design_2stage(soft_iters=iters_soft,
                         temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+
+model.save_pdb(filename=f"{args.protocol}_{args.pdb}")
+seqs = model.get_seqs()
+
+with open("output.md", "w") as out:
+    out.write(f"AF-design {args.protocol} predicted sequences:\n")
+    out.write(f"Binder length: {args.binder_len}")
+    out.write(f"Stages: {args.stages}")   
+    for seq in seqs:
+        print("Predicted binder sequence:",seq)
+        out.write(seq+"\n")
+
