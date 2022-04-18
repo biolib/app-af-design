@@ -84,7 +84,7 @@ args = parser.parse_args()
 
 # BINDER HALLUCINATION
 print("Create a model...")
-print(args.pdb)
+
 if args.model_mode is not None:  model_mode = args.model_mode
 else: model_mode = "sample"
 
