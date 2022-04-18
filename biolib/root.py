@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+sys.path.append('/')
 from design import mk_design_model, clear_mem
 
 import argparse
@@ -103,7 +104,6 @@ model._default_opt["dropout_scale"] = args.dropout_scale
 
 # Set weights 
 # Talk to Mads TODO
-
 print("Read and prepare inputs...")
 model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
                   binder_len=args.binder_len)
