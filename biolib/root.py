@@ -81,6 +81,7 @@ weights.add_argument("--rmsd", dest="rmsd",
 
 args = parser.parse_args()
 
+clear_mem()
 
 # BINDER HALLUCINATION
 print("Create a model...")
