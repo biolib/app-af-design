@@ -31,12 +31,12 @@ jobs:
 
             -   name: Publish new version to BioLib if on main branch
                 if: ${{ github.ref == 'refs/heads/main' }}  # MAIN BRANCH !!!!
-                run: biolib push $BIOLIB_PROJECT_URI --path biolib_app
+                run: biolib push $BIOLIB_PROJECT_URI --path biolib
                 env:
                     BIOLIB_TOKEN: ${{ secrets.BIOLIB_TOKEN }}
             -   name: Publish new version to BioLib-Debugging if on dev branch
                 if: ${{ github.ref == 'refs/heads/dev' }}   # DEV BRANCH! !!!
-                run: biolib push $BIOLIB_DEV_URI --path biolib_app
+                run: biolib push $BIOLIB_DEV_URI --path biolib
                 env:
                     BIOLIB_TOKEN: ${{ secrets.BIOLIB_TOKEN }}
 
