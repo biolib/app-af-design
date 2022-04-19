@@ -43,7 +43,7 @@ arguments:
         key: '--chain'
         key_value_separator: ' '
         default_value: 'A'
-        description: 'Protein target structure (PDB file)'
+        description: 'Protein target chain'
         required: true
         type: text
     -
