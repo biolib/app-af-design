@@ -151,10 +151,13 @@ model.save_pdb(filename=f"{args.protocol}_{args.pdb}")
 seqs = model.get_seqs()
 
 with open("output.md", "w") as out:
-    out.write(f"AF-design {args.protocol} predicted sequences:\n")
-    out.write(f"Binder length: {args.binder_len}")
-    out.write(f"Stages: {args.stages}")   
+    out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
+    out.write(f"**Target protein**: {args.pdb} and chain {args.chain}\n\n")
+    out.write(f"**Binder length**: {args.binder_len}\n\n")
+    out.write(f"**Stages**: {args.stages}\n\n")   
+    out.write(f"```\n")
     for seq in seqs:
         print("Predicted binder sequence:",seq)
-        out.write(seq+"\n")
+        out.write(seq+"\n\n")
+    out.write(f"```\n")
 
