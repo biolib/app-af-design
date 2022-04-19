@@ -153,12 +153,12 @@ seqs = model.get_seqs()
 
 with open("output/output.md", "w") as out:
     out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
-    out.write(f"**Target protein**: {args.pdb} and chain {args.chain}\n\n")
+    out.write(f"**Target protein**: {args.pdb} **and chain** {args.chain}\n\n")
     out.write(f"**Binder length**: {args.binder_len}\n\n")
     out.write(f"**Stages**: {args.stages}\n\n")   
-    out.write(f"```\n")
+    out.write(f"Predicted binder sequences:\n\n```\n")
     for seq in seqs:
         print("Predicted binder sequence:",seq)
-        out.write(seq+"\n\n")
+        out.write(seq+"\n")
     out.write(f"```\n")
 
