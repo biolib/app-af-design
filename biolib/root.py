@@ -15,8 +15,8 @@ parser = argparse.ArgumentParser(
 protocol = parser.add_argument_group('Define Protocol options')
 protocol.add_argument("--protocol", dest="protocol",  help="Protocol for AF-design. Default: binder.\n\tbinder: Generate a protein binder sequence that AF thinks that will bind to the target structure.\n\tfixbb: Generate a new protein sequence that AF thinks that folds into that conformation.",
                       choices=["binder", "fixbb"], default="binder", required=True)
-protocol.add_argument("--stages", dest="stages", help="How many stages for the design.\n\t2 stages: soft-->hard\n\t3 stages: logits --> soft --> hard",
-                      default="2", required=True, choices=["2", "3"])
+protocol.add_argument("--design", dest="design", help="Different functions for the design. Logits, soft, hard and for complex topologies: \n\t2 stages: soft-->hard\n\t3 stages: logits --> soft --> hard",
+                      default="3", required=True, choices=["2", "3", "logits", "soft", "hard"])
 
 # Prep input arguments:
 prep_input = parser.add_argument_group('Define Input options')
@@ -53,12 +53,14 @@ mk_design.add_argument('--recycle-mode', dest="recycle_mode", help="How to run r
 
 # iters specific arguments
 iters = parser.add_argument_group('Iterations')
+iters.add_argument("--iters", dest="iters",
+                   help="General iterations for design: logits, soft and hard. Default: 100", default=100,  type=int)
 iters.add_argument("--iters-soft", dest="iters_soft",
-                   help="Soft iters. Default: 2stage=100, 3stage=300", type=int)
+                   help="Iterations for complex topologies. Soft iters. Default: 2stage=100, 3stage=300", type=int)
 iters.add_argument("--iters-temp", dest="iters_temp",
-                   help="Temp iters. Default: 2stage=100, 3stage=100", type=int)
+                   help="Iterations for complex topologies. Temp iters. Default: 2stage=100, 3stage=100", type=int)
 iters.add_argument("--iters-hard", dest="iters_hard",
-                   help="Hard iters. Default: 2stage=50, 3stage=50", type=int)
+                   help="Iterations for complex topologies. Hard iters. Default: 2stage=50, 3stage=50", type=int)
 iters.add_argument("--temp", dest="temp",
                    help="Temperature factor, default: 1.0", default=1.0, type=float)
 
@@ -110,7 +112,7 @@ model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
                   binder_len=args.binder_len)
 
 # Check the iterations values:
-if args.stages == "3":
+if args.design == "3":
     if args.iters_soft is not None:
         iters_soft = args.iters_soft
     else:
@@ -129,7 +131,7 @@ if args.stages == "3":
     model.design_3stage(soft_iters=iters_soft,
                         temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
 
-elif args.stages == "2":
+elif args.design == "2":
     if args.iters_soft is not None:
         iters_soft = args.iters_soft
     else:
@@ -147,6 +149,12 @@ elif args.stages == "2":
     print("Design 2 stage binder...")
     model.design_2stage(soft_iters=iters_soft,
                         temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+elif args.design == "logits":
+    model.design_logits(iters=args.iters, temp=args.temp, dropout=dropout)
+elif args.design == "soft":
+    model.design_soft(iters=args.iters, temp=args.temp, dropout=dropout)
+elif args.design == "hard":
+    model.design_hard(iters=args.iters, temp=args.temp, dropout=dropout)
 
 model.save_pdb(filename=f"output/{args.protocol}_{args.pdb}")
 seqs = model.get_seqs()
