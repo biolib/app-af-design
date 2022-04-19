@@ -19,7 +19,7 @@ arguments:
         default_value: 'binder'
         description: 'Which protocol to run AF-Design?'
         required: true
-        type: dropdown
+        type: radio
         options:
             'Binder generation': binder
             'Fix backbone sequence prediction': fixbb
@@ -131,4 +131,9 @@ arguments:
                     description: Number of hard iterations for 2 stage design
                     required: false 
     -
-        key: 
+        key: '--num-seq'
+        key_value_separator: ' '
+        default_value: '1'
+        required: false
+        type: number
+        description: Number of sequences to predict
