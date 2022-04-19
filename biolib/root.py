@@ -25,7 +25,7 @@ prep_input.add_argument('--pdb', dest='pdb',
 prep_input.add_argument('--chain', dest="chain",
                         help="Which chain in the PDB, default: A", default="A")
 prep_input.add_argument('--binder-len', dest='binder_len',
-                        help="Binder length, max: 256 amino acids", type=int, required=True)
+                        help="Binder length, max: 256 amino acids", type=int)
 
 
 # General arguments:
