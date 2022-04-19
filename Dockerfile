@@ -16,6 +16,8 @@ RUN apt install ./libcudnn8_8.4.0.27-1+cuda11.6_amd64.deb
 
 
 RUN mkdir params
+RUN mkdir output
+
 RUN curl -fsSL https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14.tar | tar x -C params
 RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabFold/main/beta/colabfold.py
 #RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabDesign/beta/af/design.py

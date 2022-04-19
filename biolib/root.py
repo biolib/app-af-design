@@ -147,10 +147,10 @@ elif args.stages == "2":
     model.design_2stage(soft_iters=iters_soft,
                         temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
 
-model.save_pdb(filename=f"{args.protocol}_{args.pdb}")
+model.save_pdb(filename=f"output/{args.protocol}_{args.pdb}")
 seqs = model.get_seqs()
 
-with open("output.md", "w") as out:
+with open("output/output.md", "w") as out:
     out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
     out.write(f"**Target protein**: {args.pdb} and chain {args.chain}\n\n")
     out.write(f"**Binder length**: {args.binder_len}\n\n")

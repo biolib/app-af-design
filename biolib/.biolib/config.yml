@@ -7,7 +7,7 @@ modules:
         input_files:
             - COPY / /
         output_files:
-            - COPY /output.md /
+            - COPY /output/ /
         source_files:
             - COPY / /
         gpu: required
