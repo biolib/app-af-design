@@ -189,6 +189,9 @@ elif args.design == "hard":
 model.save_pdb(filename=f"output/{args.protocol}_{args.pdb}")
 seqs = model.get_seqs()
 
+if args.protocol == "fixbb":
+    model.plot_traj(filename=f"output/{args.protocol}_{args.pdb.split('.')[0]}_traj.png",dpi=150)
+
 with open("output/output.md", "w") as out:
     out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
     out.write(f"**Target protein**: {args.pdb} **and chain** {args.chain}\n\n")
@@ -199,4 +202,7 @@ with open("output/output.md", "w") as out:
         print("Predicted binder sequence:",seq)
         out.write(seq+"\n")
     out.write(f"```\n")
+    if args.protocol == "fixbb":
+        out.write(f"![Trajectories plot](output/{args.protocol}_{args.pdb.split('.')[0]}_traj.png")
+
 

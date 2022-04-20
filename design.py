@@ -5,7 +5,11 @@ import random, copy, os
 import numpy as np
 import jax
 import jax.numpy as jnp
-from jax.example_libraries.optimizers import sgd, adam
+
+try:
+  from jax.example_libraries.optimizers import sgd, adam
+except:
+  from jax.experimental.optimizers import sgd, adam
 
 def clear_mem():
   backend = jax.lib.xla_bridge.get_backend()
@@ -193,7 +197,7 @@ class _af_loss:
       # set sequence
       seq = params["seq"]
 
-      # shuffle msa
+      # shuffle msa (randomly pick which sequence is query)
       if self.args["num_seq"] > 1:
         i = jax.random.randint(key,[],0,seq.shape[0])
         seq = seq.at[0].set(seq[i]).at[i].set(seq[0])
@@ -405,11 +409,12 @@ class _af_design:
     shape = (self.args["num_seq"], self._len, 20)
     if isinstance(x, np.ndarray) or isinstance(x, jnp.ndarray):
       y = jnp.broadcast_to(x, shape)
+      if add_seq: self.opt["bias"] = np.array(y * 1e8) # force the sequence
     elif isinstance(x, str):
       if len(x) == self._len:
         y = jax.nn.one_hot(jnp.array([residue_constants.restype_order.get(aa,-1) for aa in x]),20)
         if add_seq: self.opt["bias"] = np.array(y * 1e8) # force the sequence
-        y = jnp.broadcast_to(2 * y, shape)
+        y = jnp.broadcast_to(y, shape)
       else:
         if "wt" in x or "wildtype" in x:
           y = jax.nn.one_hot(self._wt_aatype,20)
@@ -417,8 +422,8 @@ class _af_design:
             y = y[...,:self._len,:]
           if add_seq:
             self.opt["bias"] = np.array(y * 1e8) # force the sequence
-          y = jnp.broadcast_to(2 * y, shape)
-        if "gumbel" in x: y = jax.random.gumbel(_key, shape)/2
+          y = jnp.broadcast_to(y, shape)
+        if "gumbel" in x: y = jax.random.gumbel(_key, shape) / 2
         if "zeros" in x: y = jnp.zeros(shape)
         if "soft" in x: y = jax.nn.softmax(2 * y)
     else:
@@ -495,7 +500,6 @@ class _af_design:
     # decide which model params to use
     # m = self.args["num_models"]
     m = self.opt["models"]
-
     ns = jnp.arange(2) if self.args["use_templates"] else jnp.arange(5)
     if self.args["model_mode"] == "fixed" or m == len(ns):
       self._model_num = ns[:m]
@@ -713,7 +717,7 @@ class _af_utils:
     view.zoomTo()
     view.show()
   
-  def plot_traj(self, dpi=100):
+  def plot_traj(self, filename, dpi=100):
     fig = plt.figure(figsize=(5,5), dpi=dpi)
     gs = GridSpec(4,1, figure=fig)
     ax1 = fig.add_subplot(gs[:3,:])
@@ -746,7 +750,8 @@ class _af_utils:
       ax2.legend(loc='center left')
     else:
       print("TODO")
-    plt.show()
+    #plt.show()
+    plt.savefig(filename)
     
 def make_animation(xyz, seq, plddt=None, pae=None,
                    pos_ref=None, line_w=2.0,
