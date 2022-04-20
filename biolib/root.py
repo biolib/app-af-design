@@ -50,7 +50,6 @@ mk_design.add_argument('--num-recycles', dest="num_recycles",
 mk_design.add_argument('--recycle-mode', dest="recycle_mode", help="How to run recycles, default: sample.\n\tsample: at each iteration, randomly select a number of recycles to use, recommended.\n\tnadd_prev: add prediction logits across all recycles, stable but slow and requires memory.\n\tlast: only use gradients from last recycle.\n\tbackprop: use outputs from last recycle, but backprop through all recycles.",
                        default="sample", choices=["sample", "add_prev", "last", "backprop"])
 
-
 # iters specific arguments
 iters = parser.add_argument_group('Iterations')
 iters.add_argument("--iters", dest="iters",
@@ -85,6 +84,37 @@ args = parser.parse_args()
 
 clear_mem()
 
+# Create weights dictionary:
+if args.protocol == "binder":
+    if args.con is not None: con = args.con
+    else: con = 0.5
+    if args.i_pae is not None: i_pae = args.i_pae
+    else: i_pae = 0.01
+    if args.i_con is not None: i_con = args.i_con
+    else: i_con = 0.05
+    if args.i_bkg is not None: i_bkg = args.i_bkg
+    else: args.i_bkg
+
+    weights = {"con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
+
+elif args.protocol == "fixbb":
+    if args.dgram_cce is not None: dgram_cce = args.dgram_cce
+    else: dgram_cce = 1.0
+    if args.fape is not None: fape = args.fape
+    else: fape = 0.0
+    if args.rmsd is not None: rmsd = args.rmsd 
+    else: rmsd = 0.0
+    if args.con is not None: con = args.con
+    else: con = 0.5
+    if args.i_pae is not None: i_pae = args.i_pae
+    else: i_pae = 0.01
+    if args.i_con is not None: i_con = args.i_con
+    else: i_con = 0.05
+    if args.i_bkg is not None: i_bkg = args.i_bkg
+    else: args.i_bkg
+
+    weights = {"dgram_cce": dgram_cce, "fape": fape, "rmsd": rmsd, "con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
+
 # BINDER HALLUCINATION
 print("Create a model...")
 
@@ -92,7 +122,7 @@ if args.model_mode is not None:  model_mode = args.model_mode
 else: model_mode = "sample"
 
 model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
-                        model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+                        model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode, weights = weights)
 # Set opt
 if args.dropout == "True": dropout = True
 elif args.dropout == "False": dropout = False
