@@ -289,7 +289,7 @@ elif args.protocol == "fixbb":
             print("Predicted sequence:",seq)
             out.write(seq+"\n")
         out.write(f"```\n")
-        out.write(f"![Trajectories plot](output/{args.protocol}_{args.pdb.split('.')[0]}_traj.png\n")
+        out.write(f"![Trajectories plot](output/{args.protocol}_{args.pdb.split('.')[0]}_traj.png)\n")
 
 
 
