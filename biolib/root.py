@@ -50,7 +50,6 @@ mk_design.add_argument('--num-recycles', dest="num_recycles",
 mk_design.add_argument('--recycle-mode', dest="recycle_mode", help="How to run recycles, default: sample.\n\tsample: at each iteration, randomly select a number of recycles to use, recommended.\n\tnadd_prev: add prediction logits across all recycles, stable but slow and requires memory.\n\tlast: only use gradients from last recycle.\n\tbackprop: use outputs from last recycle, but backprop through all recycles.",
                        default="sample", choices=["sample", "add_prev", "last", "backprop"])
 
-
 # iters specific arguments
 iters = parser.add_argument_group('Iterations')
 iters.add_argument("--iters", dest="iters",
@@ -84,89 +83,214 @@ weights.add_argument("--rmsd", dest="rmsd",
 args = parser.parse_args()
 
 clear_mem()
+if args.protocol == "binder":
+    # Create weights dictionary:
+    if args.con is not None: con = args.con
+    else: con = 0.5
+    if args.i_pae is not None: i_pae = args.i_pae
+    else: i_pae = 0.01
+    if args.i_con is not None: i_con = args.i_con
+    else: i_con = 0.05
+    if args.i_bkg is not None: i_bkg = args.i_bkg
+    else: args.i_bkg
 
-# BINDER HALLUCINATION
-print("Create a model...")
-
-if args.model_mode is not None:  model_mode = args.model_mode
-else: model_mode = "sample"
-
-model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
-                        model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
-# Set opt
-if args.dropout == "True": dropout = True
-elif args.dropout == "False": dropout = False
-
-
-model._default_opt["temp"] = args.temp
-model._default_opt["dropout"] = dropout
-model._default_opt["dropout_scale"] = args.dropout_scale
+    weights = {"con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
+    
+    # BINDER HALLUCINATION
+    print("Create a model...")
 
 
-# TODO SOFT, HARD, GUMBEL...
+    if args.model_mode is not None:  model_mode = args.model_mode
+    else: model_mode = "sample"
 
-# Set weights 
-# Talk to Mads TODO
-print("Read and prepare inputs...")
-model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
-                  binder_len=args.binder_len)
+    model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
+                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+    
+    # Set opt
+    if args.dropout == "True": dropout = True
+    elif args.dropout == "False": dropout = False
 
-# Check the iterations values:
-if args.design == "3":
-    if args.iters_soft is not None:
-        iters_soft = args.iters_soft
-    else:
-        iters_soft = 100
 
-    if args.iters_temp is not None:
-        iters_temp = args.iters_temp
-    else:
-        iters_temp = 100
+    model._default_opt["temp"] = args.temp
+    model._default_opt["dropout"] = dropout
+    model._default_opt["dropout_scale"] = args.dropout_scale
 
-    if args.iters_hard is not None:
-        iters_hard = args.iters_hard
-    else:
-        iters_hard = 50
-    print("Design 3 stage binder...")
-    model.design_3stage(soft_iters=iters_soft,
-                        temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+    # TODO SOFT, HARD, GUMBEL...
 
-elif args.design == "2":
-    if args.iters_soft is not None:
-        iters_soft = args.iters_soft
-    else:
-        iters_soft = 300
+    print("Read and prepare inputs...")
+    model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
+                    binder_len=args.binder_len, weights = weights)
 
-    if args.iters_temp is not None:
-        iters_temp = args.iters_temp
-    else:
-        iters_temp = 100
 
-    if args.iters_hard is not None:
-        iters_hard = args.iters_hard
-    else:
-        iters_hard = 50
-    print("Design 2 stage binder...")
-    model.design_2stage(soft_iters=iters_soft,
-                        temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
-elif args.design == "logits":
-    model.design_logits(iters=args.iters, temp=args.temp, dropout=dropout)
-elif args.design == "soft":
-    model.design_soft(iters=args.iters, temp=args.temp, dropout=dropout)
-elif args.design == "hard":
-    model.design_hard(iters=args.iters, temp=args.temp, dropout=dropout)
+    # Check the iterations values:
+    if args.design == "3":
+        if args.iters_soft is not None:
+            iters_soft = args.iters_soft
+        else:
+            iters_soft = 100
 
-model.save_pdb(filename=f"output/{args.protocol}_{args.pdb}")
-seqs = model.get_seqs()
+        if args.iters_temp is not None:
+            iters_temp = args.iters_temp
+        else:
+            iters_temp = 100
 
-with open("output/output.md", "w") as out:
-    out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
-    out.write(f"**Target protein**: {args.pdb} **and chain** {args.chain}\n\n")
-    out.write(f"**Binder length**: {args.binder_len}\n\n")
-    out.write(f"**Design function**: {args.design}\n\n\n")   
-    out.write(f"**Predicted binder sequences:**\n\n```\n")
-    for seq in seqs:
-        print("Predicted binder sequence:",seq)
-        out.write(seq+"\n")
-    out.write(f"```\n")
+        if args.iters_hard is not None:
+            iters_hard = args.iters_hard
+        else:
+            iters_hard = 50
+        print("Design binder sequences using 3 stage...")
+        model.design_3stage(soft_iters=iters_soft,
+                            temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+
+    elif args.design == "2":
+        if args.iters_soft is not None:
+            iters_soft = args.iters_soft
+        else:
+            iters_soft = 300
+
+        if args.iters_temp is not None:
+            iters_temp = args.iters_temp
+        else:
+            iters_temp = 100
+
+        if args.iters_hard is not None:
+            iters_hard = args.iters_hard
+        else:
+            iters_hard = 50
+        print("Design binder sequences using 2 stage...")
+        model.design_2stage(soft_iters=iters_soft,
+                            temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+
+    elif args.design == "logits":
+        print("Design binder sequences using logits...")
+        model.design_logits(iters=args.iters, temp=args.temp, dropout=dropout)
+    elif args.design == "soft":
+        print("Design binder sequences using soft...")
+        model.design_soft(iters=args.iters, temp=args.temp, dropout=dropout)
+    elif args.design == "hard":
+        print("Design binder sequences using hard...")
+        model.design_hard(iters=args.iters, temp=args.temp, dropout=dropout)
+
+    model.save_pdb(filename=f"output/{args.protocol}_{args.pdb}")
+    seqs = model.get_seqs()
+
+    with open("output/output.md", "w") as out:
+        out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
+        out.write(f"**Target protein**: {args.pdb} **and chain** {args.chain}\n\n")
+        out.write(f"**Binder length**: {args.binder_len}\n\n")
+        out.write(f"**Design function**: {args.design}\n\n\n")   
+        out.write(f"**Predicted binder sequences:**\n\n```\n")
+        for seq in seqs:
+            print("Predicted binder sequence:",seq)
+            out.write(seq+"\n")
+        out.write(f"```\n")
+
+elif args.protocol == "fixbb":
+    # Weights
+    if args.dgram_cce is not None: dgram_cce = args.dgram_cce
+    else: dgram_cce = 1.0
+    if args.fape is not None: fape = args.fape
+    else: fape = 0.0
+    if args.rmsd is not None: rmsd = args.rmsd 
+    else: rmsd = 0.0
+    if args.con is not None: con = args.con
+    else: con = 0.5
+    if args.i_pae is not None: i_pae = args.i_pae
+    else: i_pae = 0.01
+    if args.i_con is not None: i_con = args.i_con
+    else: i_con = 0.05
+    if args.i_bkg is not None: i_bkg = args.i_bkg
+    else: args.i_bkg
+
+    weights = {"dgram_cce": dgram_cce, "fape": fape, "rmsd": rmsd, "con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
+
+    # BINDER HALLUCINATION
+    print("Create a model...")
+
+
+    if args.model_mode is not None:  model_mode = args.model_mode
+    else: model_mode = "sample"
+
+    model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
+                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+    # Set opt
+    if args.dropout == "True": dropout = True
+    elif args.dropout == "False": dropout = False
+
+    model._default_opt["temp"] = args.temp
+    model._default_opt["dropout"] = dropout
+    model._default_opt["dropout_scale"] = args.dropout_scale
+
+    # TODO SOFT, HARD, GUMBEL...
+
+    print("Read and prepare inputs...")
+
+    model.prep_inputs(pdb_filename=args.pdb, chain=args.chain, weights = weights)
+
+    # Check the iterations values:
+    if args.design == "3":
+        if args.iters_soft is not None:
+            iters_soft = args.iters_soft
+        else:
+            iters_soft = 100
+
+        if args.iters_temp is not None:
+            iters_temp = args.iters_temp
+        else:
+            iters_temp = 100
+
+        if args.iters_hard is not None:
+            iters_hard = args.iters_hard
+        else:
+            iters_hard = 50
+        print("Design sequences using 3 stage...")
+        model.design_3stage(soft_iters=iters_soft,
+                            temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+
+    elif args.design == "2":
+        if args.iters_soft is not None:
+            iters_soft = args.iters_soft
+        else:
+            iters_soft = 300
+
+        if args.iters_temp is not None:
+            iters_temp = args.iters_temp
+        else:
+            iters_temp = 100
+
+        if args.iters_hard is not None:
+            iters_hard = args.iters_hard
+        else:
+            iters_hard = 50
+        print("Design sequences using 2 stage...")
+        model.design_2stage(soft_iters=iters_soft,
+                            temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+
+    elif args.design == "logits":
+        print("Design sequences using logits...")
+        model.design_logits(iters=args.iters, temp=args.temp, dropout=dropout)
+    elif args.design == "soft":
+        print("Design sequences using soft...")
+        model.design_soft(iters=args.iters, temp=args.temp, dropout=dropout)
+    elif args.design == "hard":
+        print("Design sequences using hard..")
+        model.design_hard(iters=args.iters, temp=args.temp, dropout=dropout)
+
+    model.save_pdb(filename=f"output/{args.protocol}_{args.pdb}")
+    seqs = model.get_seqs()
+    model.plot_traj(filename=f"output/{args.protocol}_{args.pdb.split('.')[0]}_traj.png",dpi=150)
+
+    with open("output/output.md", "w") as out:
+        out.write(f"# AF-design {args.protocol} predicted sequences\n\n")
+        out.write(f"**Target protein**: {args.pdb} **and chain** {args.chain}\n\n")
+        out.write(f"**Design function**: {args.design}\n\n\n")   
+        out.write(f"**Predicted sequences:**\n\n```\n")
+        for seq in seqs:
+            print("Predicted sequence:",seq)
+            out.write(seq+"\n")
+        out.write(f"```\n\n")
+        out.write(f"![Trajectories plot]({args.protocol}_{args.pdb.split('.')[0]}_traj.png)\n")
+
+
+
 
