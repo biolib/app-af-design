@@ -138,8 +138,11 @@ model._default_opt["dropout_scale"] = args.dropout_scale
 # Set weights 
 # Talk to Mads TODO
 print("Read and prepare inputs...")
-model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
+if args.protocol == "binder":
+    model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
                   binder_len=args.binder_len, weights = weights)
+else: 
+    model.prep_inputs(pdb_filename=args.pdb, chain=args.chain, weights = weights)
 
 # Check the iterations values:
 if args.design == "3":
