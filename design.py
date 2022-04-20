@@ -717,7 +717,7 @@ class _af_utils:
     view.zoomTo()
     view.show()
   
-  def plot_traj(self, filename, dpi=100):
+  def plot_traj(self, filename, dpi=100): # TODO LAURA CHANGED
     fig = plt.figure(figsize=(5,5), dpi=dpi)
     gs = GridSpec(4,1, figure=fig)
     ax1 = fig.add_subplot(gs[:3,:])
@@ -751,7 +751,7 @@ class _af_utils:
     else:
       print("TODO")
     #plt.show()
-    plt.savefig(filename)
+    plt.savefig(filename) # TODO LAURA CHANGED
     
 def make_animation(xyz, seq, plddt=None, pae=None,
                    pos_ref=None, line_w=2.0,

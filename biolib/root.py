@@ -122,7 +122,7 @@ if args.model_mode is not None:  model_mode = args.model_mode
 else: model_mode = "sample"
 
 model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
-                        model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode, weights = weights)
+                        model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
 # Set opt
 if args.dropout == "True": dropout = True
 elif args.dropout == "False": dropout = False
@@ -139,7 +139,7 @@ model._default_opt["dropout_scale"] = args.dropout_scale
 # Talk to Mads TODO
 print("Read and prepare inputs...")
 model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
-                  binder_len=args.binder_len)
+                  binder_len=args.binder_len, weights = weights)
 
 # Check the iterations values:
 if args.design == "3":
