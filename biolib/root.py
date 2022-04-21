@@ -92,7 +92,7 @@ if args.protocol == "binder":
     if args.i_con is not None: i_con = args.i_con
     else: i_con = 0.05
     if args.i_bkg is not None: i_bkg = args.i_bkg
-    else: args.i_bkg
+    else: i_bkg = 0.0
 
     weights = {"con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
     
@@ -184,6 +184,9 @@ if args.protocol == "binder":
             print("Predicted binder sequence:",seq)
             out.write(seq+"\n")
         out.write(f"```\n")
+    with open(f"output/{args.protocol}_{args.pdb.split('.')[0]}_sequences.fasta", "w") as fasta:
+        for i in range(len(seqs)):
+            fasta.write(f">sequence_{args.protocol}_{args.pdb.split('.')[0]}_{str(i)}\n{seqs[i]}\n")
 
 elif args.protocol == "fixbb":
     # Weights
@@ -200,7 +203,7 @@ elif args.protocol == "fixbb":
     if args.i_con is not None: i_con = args.i_con
     else: i_con = 0.05
     if args.i_bkg is not None: i_bkg = args.i_bkg
-    else: args.i_bkg
+    else: i_bkg = 0.0
 
     weights = {"dgram_cce": dgram_cce, "fape": fape, "rmsd": rmsd, "con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
 
@@ -211,8 +214,6 @@ elif args.protocol == "fixbb":
     if args.model_mode is not None:  model_mode = args.model_mode
     else: model_mode = "sample"
 
-    model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
-                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
     # Set opt
     if args.dropout == "True": dropout = True
     elif args.dropout == "False": dropout = False
@@ -223,6 +224,9 @@ elif args.protocol == "fixbb":
 
     # TODO SOFT, HARD, GUMBEL...
 
+    model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
+                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+    
     print("Read and prepare inputs...")
 
     model.prep_inputs(pdb_filename=args.pdb, chain=args.chain, weights = weights)
@@ -291,6 +295,8 @@ elif args.protocol == "fixbb":
         out.write(f"```\n\n")
         out.write(f"![Trajectories plot]({args.protocol}_{args.pdb.split('.')[0]}_traj.png)\n")
 
-
+    with open(f"output/{args.protocol}_{args.pdb.split('.')[0]}_sequences.fasta",'w') as fasta:
+        for i in range(len(seqs)):
+            fasta.write(f">sequence_{args.protocol}_{args.pdb.split('.')[0]}_{str(i)}\n{seqs[i]}\n")
 
 
