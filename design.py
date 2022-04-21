@@ -3,6 +3,10 @@ sys.path.append('/af_backprop')
 
 import random, copy, os
 import numpy as np
+
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import jax
 import jax.numpy as jnp
 
