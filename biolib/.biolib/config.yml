@@ -8,8 +8,7 @@ modules:
             - COPY / /
         output_files:
             - COPY /output/ /
-        source_files:
-            - []
+        source_files: []
         gpu: required
 main_output_file: /output.md
 arguments:
