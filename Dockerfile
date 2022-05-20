@@ -21,11 +21,10 @@ RUN mkdir output
 RUN curl -fsSL https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14.tar | tar x -C params
 RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabFold/main/beta/colabfold.py
 #RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabDesign/beta/af/design.py
-RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabDesign/beta/af/bkg_prob.txt
 
 
 COPY biolib/root.py root.py
 # TODO For now hard copy design so I can do development on it, remember to comment this after and uncomment the above desing.py
-COPY design.py design.py  
+COPY af af  
 
 #CMD ["python3", "root.py"]
