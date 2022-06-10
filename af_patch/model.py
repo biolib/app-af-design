@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/af_backprop')
+sys.path.append('/home/biolib/af_backprop/')
 
 import jax
 import jax.numpy as jnp
