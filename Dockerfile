@@ -18,13 +18,16 @@ RUN apt install ./libcudnn8_8.4.0.27-1+cuda11.6_amd64.deb
 RUN mkdir params
 RUN mkdir output
 
-RUN curl -fsSL https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14.tar | tar x -C params
-RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabFold/main/beta/colabfold.py
+RUN curl -fsSL https://storage.googleapis.com/alphafold/alphafold_params_2022-03-02.tar | tar x -C params
+RUN git clone https://github.com/sokrypton/ColabDesign.git && cd ColabDesign && git fetch && git branch -v -a && git checkout beta && cp -r /ColabDesign/af ..
+
+# TODO this comments below seem outdated
+# TODO For now hard copy design so I can do development on it, remember to comment this after and uncomment the below desing.py
+#COPY af af
+#RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabFold/main/beta/colabfold.py
 #RUN wget -qnc https://raw.githubusercontent.com/sokrypton/ColabDesign/beta/af/design.py
 
-
 COPY biolib/root.py root.py
-# TODO For now hard copy design so I can do development on it, remember to comment this after and uncomment the above desing.py
-COPY af af  
+  
 
 #CMD ["python3", "root.py"]
