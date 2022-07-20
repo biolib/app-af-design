@@ -1,0 +1,137 @@
+biolib_version: 2
+modules:
+    main:
+        image: 'local-docker://af-design:latest'
+        command: python3 root.py
+        working_directory: /home/biolib/
+        input_files:
+            - COPY / /home/biolib/
+        output_files:
+            - COPY /home/biolib/output/ /
+        gpu: required
+main_output_file: /output.md
+arguments:
+    -
+        key: '--protocol'
+        key_value_separator: ' '
+        default_value: 'binder'
+        description: 'Which protocol to run AF-Design?'
+        required: true
+        type: radio
+        options:
+            'Binder generation': binder
+            'Fix backbone sequence prediction': fixbb
+        sub_arguments:
+            'binder':
+                -
+                    key: '--binder-len'
+                    key_value_separator: ' '
+                    default_value: '20'
+                    type: number
+                    required: false
+                    description: 'Binder sequence length'
+    -
+        key: '--pdb'
+        key_value_separator: ' '
+        default_value: ''
+        description: 'Protein target structure (PDB file)'
+        required: true
+        type: file
+    -
+        key: '--chain'
+        key_value_separator: ' '
+        default_value: 'A'
+        description: 'Protein target chain'
+        required: true
+        type: text
+    -
+        key: '--design'
+        key_value_separator: ' '
+        default_value: '3'
+        type: dropdown
+        required: true
+        description: 'Choose design function'
+        options:
+            'Optimize logits inputs (continuous)': 'logits'
+            'Optimize softmax(logits) inputs (probabilities)': 'soft'
+            'Optimize one_hot(logits) inputs (discrete)': 'hard'
+            'Optimize in 2 stage design for complex topologies (soft > hard)': "2"
+            'Optimize in 3 stage design for complex topologies (logits > soft > hard)': "3"  
+        sub_arguments:
+            'logits':
+                -
+                    key: '--iters'
+                    key_value_separator: ' '
+                    default_value: '100'
+                    type: number
+                    description: Number of iterations for design
+                    required: false 
+            'soft':
+                -
+                    key: '--iters'
+                    key_value_separator: ' '
+                    default_value: '100'
+                    type: number
+                    description: Number of iterations for design
+                    required: false 
+            'hard':
+                -
+                    key: '--iters'
+                    key_value_separator: ' '
+                    default_value: '100'
+                    type: number
+                    description: Number of iterations for design
+                    required: false 
+            '3':
+                -
+                    key: '--iters-soft'
+                    key_value_separator: ' '
+                    default_value: '100'
+                    type: number
+                    description: Number of soft iterations for 3 stage design
+                    required: false 
+                -
+                    key: '--iters-temp'
+                    key_value_separator: ' '
+                    default_value: '100'
+                    type: number
+                    description: Number of temp iterations for 3 stage design
+                    required: false 
+
+                -
+                    key: '--iters-hard'
+                    key_value_separator: ' '
+                    default_value: '50'
+                    type: number
+                    description: Number of hard iterations for 3 stage design
+                    required: false 
+            '2':
+                -
+                    key: '--iters-soft'
+                    key_value_separator: ' '
+                    default_value: '300'
+                    type: number
+                    description: Number of soft iterations for 2 stage design
+                    required: false 
+                -
+                    key: '--iters-temp'
+                    key_value_separator: ' '
+                    default_value: '100'
+                    type: number
+                    description: Number of temp iterations for 2 stage design
+                    required: false 
+
+                -
+                    key: '--iters-hard'
+                    key_value_separator: ' '
+                    default_value: '50'
+                    type: number
+                    description: Number of hard iterations for 2 stage design
+                    required: false 
+    -
+        key: '--num-seq'
+        key_value_separator: ' '
+        default_value: '1'
+        required: false
+        type: number
+        description: Number of sequences to predict
