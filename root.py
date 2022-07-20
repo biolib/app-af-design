@@ -35,6 +35,7 @@ prep_input.add_argument('--chain', dest="chain",
                         help="Which chain in the PDB, default: A", default="A")
 prep_input.add_argument('--binder-len', dest='binder_len',
                         help="Binder length, max: 256 amino acids", type=int)
+prep_input.add_argument('--binder-chain', dest="binder_chain", help="Redesign an existing binder", default="")
 
 
 # General arguments:
@@ -126,7 +127,7 @@ if args.protocol == "partial":
 
         weights.update({'sc_fape': sc_fape, 'sc_rmsd': sc_rmsd})
     
-    # BINDER HALLUCINATION
+    # PARTIAL HALLUCINATION
     print("Create a model...")
 
 
@@ -168,7 +169,7 @@ if args.protocol == "partial":
             iters_hard = args.iters_hard
         else:
             iters_hard = 50
-        print("Design binder sequences using 3 stage...")
+        print("Design partial hallucination sequences using 3 stage...")
         model.design_3stage(soft_iters=iters_soft,
                             temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
 
@@ -254,8 +255,13 @@ if args.protocol == "binder":
     # TODO SOFT, HARD, GUMBEL...
 
     print("Read and prepare inputs...")
-    model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
-                    binder_len=args.binder_len, weights = weights)
+    if args.binder_chain != "":
+        model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
+                    binder_chain=args.binder_chain, weights = weights, )
+    else: 
+        model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
+                    binder_len=args.binder_len, weights = weights )
+    
 
 
     # Check the iterations values:
