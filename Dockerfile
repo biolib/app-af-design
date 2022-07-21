@@ -19,7 +19,6 @@ RUN apt install ./libcudnn8_8.4.0.27-1+cuda11.6_amd64.deb
 
 RUN mkdir params
 RUN mkdir output
-RUN mkdir af 
 
 RUN curl -fsSL https://storage.googleapis.com/alphafold/alphafold_params_2022-03-02.tar | tar x -C params
 RUN git clone https://github.com/sokrypton/ColabDesign.git && cd ColabDesign && git fetch && git branch -v -a && git checkout beta
@@ -32,5 +31,5 @@ COPY af_patch/model.py /home/biolib/colabdesign/af/model.py
 COPY af_patch/design.py /home/biolib/colabdesign/af/design.py
 
 COPY root.py root.py
-  
+COPY example.pdb example.pdb 
 #CMD ["python3", "root.py"]

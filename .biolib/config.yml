@@ -7,12 +7,7 @@ modules:
         input_files:
             - COPY / /home/biolib/
         output_files:
-<<<<<<< HEAD:biolib/.biolib/config.yml
-            - COPY /output/ /
-        source_files: []
-=======
             - COPY /home/biolib/output/ /
->>>>>>> main:.biolib/config.yml
         gpu: required
 main_output_file: /output.md
 arguments:
