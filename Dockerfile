@@ -29,6 +29,7 @@ RUN rm -rf ColabDesign
 # move the modified files
 COPY af_patch/model.py /home/biolib/colabdesign/af/model.py
 COPY af_patch/design.py /home/biolib/colabdesign/af/design.py
+COPY af_patch/loss.py /home/biolib/colabdesign/af/loss.py
 
 COPY root.py root.py
 COPY example.pdb example.pdb 
