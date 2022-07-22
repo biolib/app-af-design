@@ -261,8 +261,6 @@ if args.protocol == "binder":
     else: 
         model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
                     binder_len=args.binder_len, weights = weights )
-    
-
 
     # Check the iterations values:
     if args.design == "3":
