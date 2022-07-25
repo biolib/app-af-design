@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 sys.path.append('/')
-from af import mk_design_model, clear_mem
+from colabdesign import mk_design_model, clear_mem
 
 import argparse
 from argparse import RawTextHelpFormatter
@@ -53,8 +53,8 @@ mk_design.add_argument('--num-seq', dest="num_seq",
                        help="Number of sequences to predict, default: 1", default=1, type=int)
 mk_design.add_argument('--num-models', dest="num_models",
                        help="Number of model parameters to use, default: 1", default=1, type=int)
-mk_design.add_argument('--model-mode', dest="model_mode",
-                       help="How to run the models, default: sample.\n\tsample: at each iteration, randomly select one model param to use.\n\tparallel: run num_models in parallel, average the gradients.", choices=["sample", "parallel"], default="sample")
+#mk_design.add_argument('--model-mode', dest="model_mode",
+#                       help="How to run the models, default: sample.\n\tsample: at each iteration, randomly select one model param to use.\n\tparallel: run num_models in parallel, average the gradients.", choices=["sample", "parallel"], default="sample")
 mk_design.add_argument('--num-recycles', dest="num_recycles",
                        help="Max number of recycles to use during design. For de novo proteins, 0 is usually enough. Default: 0", default=0, type=int)
 mk_design.add_argument('--recycle-mode', dest="recycle_mode", help="How to run recycles, default: sample.\n\tsample: at each iteration, randomly select a number of recycles to use, recommended.\n\tnadd_prev: add prediction logits across all recycles, stable but slow and requires memory.\n\tlast: only use gradients from last recycle.\n\tbackprop: use outputs from last recycle, but backprop through all recycles.",
@@ -83,8 +83,8 @@ weights.add_argument("--icon", dest="i_con",
                      help="Maximize number of contacts with the interface of the protein", default=0.05, type=float)
 weights.add_argument("--ipae", dest="i_pae",
                      help="Minimize Predicted Alignment Error (PAE) interface of the protein", default=0.01, type=float)
-weights.add_argument("--ibkg", dest="i_bkg",
-                     help="Background KL loss", default=0.0, type=float)
+#weights.add_argument("--ibkg", dest="i_bkg",
+#                     help="Background KL loss", default=0.0, type=float)
 weights.add_argument("--dgram-cce", dest="dgram_cce",
                      help="Distogram log loss. Minimizes the categorical-cross-entropy between predicted distogram and pdb.\nOnly for fixbb protocol. Default: 1.0", default=1.0, type=float)
 weights.add_argument("--fape", dest="fape",
@@ -131,20 +131,20 @@ if args.protocol == "partial":
     print("Create a model...")
 
 
-    if args.model_mode is not None:  model_mode = args.model_mode
-    else: model_mode = "sample"
+    #if args.model_mode is not None:  model_mode = args.model_mode
+    #else: model_mode = "sample"
 
     model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq, use_templates=args.use_templates,
-                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+                            num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
     
     # Set opt
     if args.dropout == "True": dropout = True
     elif args.dropout == "False": dropout = False
 
 
-    model._default_opt["temp"] = args.temp
-    model._default_opt["dropout"] = dropout
-    model._default_opt["dropout_scale"] = args.dropout_scale
+    model.opt["temp"] = args.temp
+    model.opt["dropout"] = dropout
+    model.opt["dropout_scale"] = args.dropout_scale
 
     # TODO SOFT, HARD, GUMBEL...
 
@@ -228,29 +228,29 @@ if args.protocol == "binder":
     else: i_pae = 0.01
     if args.i_con is not None: i_con = args.i_con
     else: i_con = 0.05
-    if args.i_bkg is not None: i_bkg = args.i_bkg
-    else: i_bkg = 0.0
+    #if args.i_bkg is not None: i_bkg = args.i_bkg
+    #else: i_bkg = 0.0
 
-    weights = {"con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
+    weights = {"con": con, "i_pae":i_pae, "i_con":i_con}#, "i_bkg":i_bkg}
     
     # BINDER HALLUCINATION
     print("Create a model...")
 
 
-    if args.model_mode is not None:  model_mode = args.model_mode
-    else: model_mode = "sample"
+    #if args.model_mode is not None:  model_mode = args.model_mode
+    #else: model_mode = "sample"
 
     model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
-                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+                            num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
     
     # Set opt
     if args.dropout == "True": dropout = True
     elif args.dropout == "False": dropout = False
 
 
-    model._default_opt["temp"] = args.temp
-    model._default_opt["dropout"] = dropout
-    model._default_opt["dropout_scale"] = args.dropout_scale
+    model.opt["temp"] = args.temp
+    model.opt["dropout"] = dropout
+    model.opt["dropout_scale"] = args.dropout_scale
 
     # TODO SOFT, HARD, GUMBEL...
 
@@ -261,8 +261,6 @@ if args.protocol == "binder":
     else: 
         model.prep_inputs(pdb_filename=args.pdb, chain=args.chain,
                     binder_len=args.binder_len, weights = weights )
-    
-
 
     # Check the iterations values:
     if args.design == "3":
@@ -282,7 +280,7 @@ if args.protocol == "binder":
             iters_hard = 50
         print("Design binder sequences using 3 stage...")
         model.design_3stage(soft_iters=iters_soft,
-                            temp_iters=iters_temp, hard_iters=iters_hard, temp=args.temp, dropout=dropout)
+                            temp_iters=iters_temp, hard_iters=iters_hard, dropout=dropout) # temp=args.temp,
 
     elif args.design == "2":
         if args.iters_soft is not None:
@@ -344,30 +342,30 @@ elif args.protocol == "fixbb":
     else: i_pae = 0.01
     if args.i_con is not None: i_con = args.i_con
     else: i_con = 0.05
-    if args.i_bkg is not None: i_bkg = args.i_bkg
-    else: i_bkg = 0.0
+    #if args.i_bkg is not None: i_bkg = args.i_bkg
+    #else: i_bkg = 0.0
 
-    weights = {"dgram_cce": dgram_cce, "fape": fape, "rmsd": rmsd, "con": con, "i_pae":i_pae, "i_con":i_con, "i_bkg":i_bkg}
+    weights = {"dgram_cce": dgram_cce, "fape": fape, "rmsd": rmsd, "con": con, "i_pae":i_pae, "i_con":i_con}#, "i_bkg":i_bkg}
 
     # BINDER HALLUCINATION
     print("Create a model...")
 
 
-    if args.model_mode is not None:  model_mode = args.model_mode
-    else: model_mode = "sample"
+    #if args.model_mode is not None:  model_mode = args.model_mode
+    #else: model_mode = "sample"
 
     # Set opt
     if args.dropout == "True": dropout = True
     elif args.dropout == "False": dropout = False
 
-    model._default_opt["temp"] = args.temp
-    model._default_opt["dropout"] = dropout
-    model._default_opt["dropout_scale"] = args.dropout_scale
+    model.opt["temp"] = args.temp
+    model.opt["dropout"] = dropout
+    model.opt["dropout_scale"] = args.dropout_scale
 
     # TODO SOFT, HARD, GUMBEL...
 
     model = mk_design_model(protocol=args.protocol, num_models=args.num_models, num_seq=args.num_seq,
-                            model_mode=model_mode, num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
+                            num_recycles=args.num_recycles, recycle_mode=args.recycle_mode)
     
     print("Read and prepare inputs...")
 
