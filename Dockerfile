@@ -21,10 +21,17 @@ RUN mkdir params
 RUN mkdir output
 
 RUN curl -fsSL https://storage.googleapis.com/alphafold/alphafold_params_2022-03-02.tar | tar x -C params
-RUN git clone https://github.com/sokrypton/ColabDesign.git && cd ColabDesign && git fetch && git branch -v -a && git checkout beta
+RUN git clone https://github.com/sokrypton/ColabDesign.git 
+#&& cd ColabDesign && git fetch && git branch -v -a && git checkout beta
 #RUN cp -r ColabDesign/af/src /home/biolib/af/ && cp /home/biolib/ColabDesign/af/__init__.py /home/biolib/af/
 RUN cp -r ColabDesign/colabdesign/ /home/biolib/ 
 RUN rm -rf ColabDesign
+
+# Add OpenFold params
+RUN wget -qnc https://files.ipd.uw.edu/krypton/openfold/openfold_model_ptm_1.npz -P params && mv params/openfold_model_ptm_1.npz params/params_openfold_model_ptm_1.npz
+RUN wget -qnc https://files.ipd.uw.edu/krypton/openfold/openfold_model_ptm_2.npz -P params && mv params/openfold_model_ptm_2.npz params/params_openfold_model_ptm_2.npz
+RUN wget -qnc https://files.ipd.uw.edu/krypton/openfold/openfold_model_no_templ_ptm_1.npz -P params && mv params/openfold_model_no_templ_ptm_1.npz params/params_openfold_model_no_templ_ptm_1.npz
+
 
 # move the modified files
 COPY af_patch/model.py /home/biolib/colabdesign/af/model.py
